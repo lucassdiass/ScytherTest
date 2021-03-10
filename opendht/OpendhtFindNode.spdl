@@ -1,0 +1,37 @@
+usertype string, key-y, reqwant, reqnodes, key-ua;
+hashfunction h;
+protocol OpendhtFindNode(nodeA, nodeB)
+{
+	role nodeA
+	{
+		fresh tid: Nonce;
+		fresh find: string; 
+		fresh key-q: key-y; 
+		fresh want: reqwant; 
+		var nodes4: reqnodes;
+		var nodes6: reqnodes;
+		var key-r: key-y;
+		fresh my-v: key-ua;
+		var otherv: key-ua;
+		send_1(nodeA, nodeB, h(nodeA), h(nodeB),want, find, tid, key-q,my-v );
+		recv_2(nodeB, nodeA,  h(nodeB), nodeA,nodes4, nodes6, tid, key-r,otherv);
+		claim(nodeA, Nisynch);
+		claim(nodeA, Alive);
+	}
+	role nodeB 
+	{
+		var tid: Nonce;
+		var find: string; 
+		var want: reqwant; 
+		var key-q: key-y; 
+		fresh my-v: key-ua;
+		var otherv: key-ua;
+		fresh key-r: key-y;
+		fresh nodes4: reqnodes;
+		fresh nodes6: reqnodes;
+		recv_1(nodeA, nodeB, h(nodeA), h(nodeB),want, find, tid, key-q,otherv);
+		send_2(nodeB, nodeA, h(nodeB), nodeA,nodes4, nodes6, tid, key-r,my-v);
+		claim(nodeB, Nisynch);
+		claim(nodeB, Alive);
+	}
+}

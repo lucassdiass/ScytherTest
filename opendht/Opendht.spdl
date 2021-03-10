@@ -1,0 +1,34 @@
+usertype string;
+usertype key-y;
+usertype key-ua;
+hashfunction h;
+protocol Opendht(bootstrap, newnode)
+{
+	role newnode
+	{
+		fresh tid: Nonce;
+		fresh ping: string; 
+		fresh key-q: key-y; 
+		fresh newnode-v: key-ua;
+		var key-r: key-y; 
+		var bootstrap-v: key-ua;
+		send_1(newnode, bootstrap, h(newnode), ping, tid, key-q, newnode-v);
+		recv_2(bootstrap, newnode,  h(bootstrap), tid, key-r,  bootstrap-v);
+		claim(newnode, Nisynch);
+		claim(newnode, Alive);
+	}
+	role bootstrap 
+	{
+		var tid: Nonce;
+		var ping: string; 
+		var key-q: key-y; 
+		var newnode-v: key-ua;
+		fresh bootstrap-v: key-ua;
+		fresh key-r: key-y; 
+		recv_1(newnode, bootstrap,  h(newnode), ping, tid, key-q, newnode-v);
+		send_2(bootstrap, newnode,  h(bootstrap), tid, key-r,  bootstrap-v);
+		claim(bootstrap, Nisynch);
+		claim(bootstrap, Alive);
+	}
+}
+
