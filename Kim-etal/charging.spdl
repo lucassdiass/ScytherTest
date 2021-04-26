@@ -1,0 +1,74 @@
+hashfunction h, h1, h2;
+usertype Identity,  Price, ChargingTime, Amount, Payment , Timestamp;
+const g: Function;
+protocol  @Authentication (SWAP)
+{
+	role SWAP
+	{		
+		var a: Ticket;
+		var IDev :Ticket;
+		var Y: Agent;
+		var T1: Timestamp;
+		recv_!SWAP1( SWAP, SWAP,  pk(SWAP), {a, h1(IDev, a), T1} k(  h(pk(Y), sk(SWAP)) ) , h(a,h1(IDev, a), T1), T1 )   ;
+		send_!SWAP2( SWAP, SWAP, pk(SWAP), {a, h1(IDev, a), T1} k( h(pk(SWAP),sk(Y)) ), h(a,h1(IDev, a), T1), T1);	
+	}
+}
+protocol Charging(EV, EAG, Blockchain)
+{
+	role EV
+	{
+		fresh IDi:Identity;
+		fresh a1: Nonce;
+		fresh T1:Timestamp;
+		var T2:Timestamp;
+		var b1: Nonce;
+		//var IDeag:Identity;
+		fresh amount:Amount;
+		fresh price: Price;
+		fresh payment:Payment;
+		fresh CT: ChargingTime;
+		send_!1(EV,EAG,pk(EV), {a1, h1(IDi,a1), T1}k(h(pk(EAG), sk(EV))), h(a1, h1(IDi,a1), T1) , T1) ;
+		recv_2(EAG,EV, {b1}k(a1), h(EAG,a1,b1,T2),T2);
+		send_3(EV, EAG, {h1(IDi,a1), EAG, amount, price, payment,CT}sk(EV), h( h1(IDi,a1),EAG, h2(h1(IDi,a1),EAG, a1, b1) ) );
+		claim(EV, Alive);
+		claim(EV, Nisynch);
+		claim(EV, Niagree);
+		claim(EV, Weakagree);
+	}
+	role EAG
+	{
+		var IDi:Identity;
+		fresh IDeag:Identity;
+		var a1: Nonce;
+		var T1:Timestamp;
+		fresh T2:Timestamp;
+		fresh b1: Nonce;
+		var amount:Amount;
+		var price: Price;
+		var payment:Payment;
+		var CT: ChargingTime;
+		recv_!1(EV,EAG,pk(EV), {a1, h1(IDi,a1), T1}k(h(pk(EV), sk(EAG))), h(a1, h1(IDi,a1), T1), T1 ) ;
+		send_2(EAG,EV, {b1}k(a1), h(EAG,a1,b1,T2),T2);
+		recv_3(EV, EAG,{h1(IDi,a1), EAG, amount, price, payment,CT}sk(EV), h(h1(IDi,a1),EAG, h2(h1(IDi,a1),EAG, a1, b1) ) );
+		send_4(EAG, Blockchain,  {{h1(IDi,a1), IDeag, amount, price, payment,CT}sk(EV)}sk(EAG));
+		claim(EAG, Alive);
+		claim(EAG, Nisynch);
+		claim(EAG, Niagree);
+		claim(EAG, Weakagree);
+	}
+	role Blockchain
+	{
+		var IDeag:Identity;
+		var IDi:Identity;
+		var a1: Nonce;
+		var amount:Amount;
+		var price: Price;
+		var payment:Payment;
+		var CT: ChargingTime;
+		recv_4(EAG, Blockchain,  {{h1(IDi,a1), IDeag, amount, price, payment,CT}sk(EV)}sk(EAG));
+		claim(Blockchain, Alive);
+		claim(Blockchain, Nisynch);
+		claim(Blockchain, Niagree);
+		claim(Blockchain, Weakagree);	
+	}
+}

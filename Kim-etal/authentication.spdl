@@ -1,0 +1,55 @@
+hashfunction h, h1;
+usertype Password, Identity, Timestamp;
+protocol  @oracle (SWAP)
+{
+	role SWAP
+	{
+		var a, IDev :Ticket;
+		var Y: Agent;
+		var T1: Timestamp;
+		recv_!SWAP1( SWAP, SWAP,  pk(SWAP), {a, h1(IDev, a), T1} k(  h(pk(Y), sk(SWAP)) ) , h(a,h1(IDev, a), T1), T1 )   ;
+		send_!SWAP2( SWAP, SWAP, pk(SWAP), {a, h1(IDev, a), T1} k( h(pk(SWAP),sk(Y)) ), h(a,h1(IDev, a), T1), T1);	
+	}
+}
+protocol AuthenticationPhase(EV, EAG)
+{
+	role EV
+	{
+		fresh IDi:Identity;
+		fresh PWi: Password;
+		fresh a1: Nonce;
+		fresh T1:Timestamp;
+		var T2:Timestamp;
+		var b1: Nonce;
+		var IDeag:Identity;
+		send_!1(EV,EAG,pk(EV), {a1, h1(IDi,a1), T1}k(h(pk(EAG), sk(EV))), h(a1, h1(IDi,a1), T1) , T1) ;
+		recv_2(EAG,EV, {b1}k(a1), h(IDeag,a1,b1,T2),T2);
+		claim(EV, Alive);
+		claim(EV, Nisynch);
+		claim(EV, Niagree);
+		claim(EV, Weakagree);
+		claim(EV, Secret, a1);
+		claim(EV, Secret, h1(IDi,a1) );
+		claim(EV, Secret, T1);
+		claim(EV, Secret, b1);
+	}
+	role EAG
+	{
+		var IDi:Identity;
+		fresh IDeag:Identity;
+		var a1: Nonce;
+		var T1:Timestamp;
+		fresh T2:Timestamp;
+		fresh b1: Nonce;
+		recv_!1(EV,EAG,pk(EV), {a1, h1(IDi,a1), T1}k(h(pk(EV), sk(EAG))), h(a1, h1(IDi,a1), T1), T1 ) ;
+		send_2(EAG,EV, {b1}k(a1), h(IDeag,a1,b1,T2),T2);
+		claim(EAG, Alive);
+		claim(EAG, Nisynch);
+		claim(EAG, Niagree);
+		claim(EAG, Weakagree);
+		claim(EAG, Secret, a1);
+		claim(EAG, Secret, h1(IDi,a1) );
+		claim(EAG, Secret, T1);
+		claim(EAG, Secret, b1);
+	}
+}

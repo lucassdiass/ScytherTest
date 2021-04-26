@@ -1,0 +1,36 @@
+hashfunction h, h1;
+usertype Password, Identity;
+protocol RegistrationPhase(EV, OP)
+{
+	role EV
+	{
+		fresh IDi:Identity;
+		fresh PWi: Password;
+		fresh a1: Nonce;
+		var Kop;
+		send_1(EV, OP, h1(IDi, a1), a1);
+		recv_2(OP, EV, {Kop}k(h(h1(IDi, a1), a1)), h(h1(IDi, a1), a1, Kop));
+		claim(EV, Alive);
+		claim(EV, Nisynch);
+		claim(EV, Niagree);
+		claim(EV, Weakagree);
+		claim(EV, Secret, IDi);
+		claim(EV, Secret, a1);
+		claim(EV, Secret, Kop);
+	}
+	role OP
+	{
+		var IDi:Identity;
+		var a1: Nonce;
+		fresh Kop: Nonce;
+		recv_1(EV, OP, h1(IDi, a1), a1);	
+		send_2(OP, EV, {Kop}k(h(h1(IDi, a1), a1)), h(h1(IDi, a1), a1, Kop));
+		claim(OP, Alive);
+		claim(OP, Nisynch);
+		claim(OP, Niagree);
+		claim(OP, Weakagree);
+		claim(OP, Secret, IDi);
+		claim(OP, Secret, a1);
+		claim(OP, Secret, Kop);
+	}
+}
